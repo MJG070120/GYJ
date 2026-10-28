@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0b0c">
+  <meta name="color-scheme" content="dark">
+  <title>光影集 · 摄影画廊</title>
+  <meta name="description" content="光影集 LUMIÈRE —— 一个可以注册、上传和展示摄影作品的公共画廊。">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#gallery">跳到作品</a>
+  <div class="grain" aria-hidden="true"></div>
+
+  <header class="site-header" id="siteHeader">
+    <div class="shell header-inner">
+      <a class="brand" href="./" aria-label="光影集首页">
+        <span class="brand-cn">光影集</span>
+        <span class="brand-en">LUMIÈRE</span>
+      </a>
+
+      <div class="header-tools">
+        <label class="search" for="searchInput">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="16.5" y1="16.5" x2="21" y2="21"></line></svg>
+          <input id="searchInput" type="search" placeholder="搜索作品、作者、胶片" autocomplete="off" spellcheck="false" aria-label="搜索作品">
+          <button type="button" class="search-clear" id="searchClear" aria-label="清空搜索" hidden>&times;</button>
+        </label>
+
+        <button class="btn btn-primary" id="uploadBtn" type="button" aria-label="上传作品" hidden>
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          <span class="upload-full">上传作品</span>
+          <span class="upload-short">上传</span>
+        </button>
+
+        <button class="btn btn-ghost login-btn" id="loginBtn" type="button">登录</button>
+
+        <div class="user-menu" id="userMenu" hidden>
+          <button class="user-chip" id="userChip" type="button" aria-haspopup="menu" aria-expanded="false">
+            <span class="avatar" id="userAvatar">M</span>
+            <span class="user-name" id="userName"></span>
+            <svg class="icon chevron" viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </button>
+          <div class="user-dropdown" id="userDropdown" role="menu" hidden>
+            <div class="user-dropdown-head">
+              <strong id="menuName"></strong>
+              <span id="menuEmail"></span>
+              <span class="admin-tag" id="menuAdmin" hidden>管理员</span>
+            </div>
+            <button type="button" id="logoutBtn" role="menuitem">退出登录</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="page shell">
+    <section class="hero">
+      <p class="eyebrow">PUBLIC PHOTO ARCHIVE <span>·</span> 公开影像档案</p>
+      <h1>把光，<br>留在此刻。</h1>
+      <p class="hero-copy">收藏你按下快门的瞬间。注册后上传作品，让每一次快门都被看见。</p>
+      <dl class="hero-stats">
+        <div><dt>作品</dt><dd id="statCount">—</dd></div>
+        <div><dt>作者</dt><dd id="statAuthors">—</dd></div>
+        <div><dt>收藏</dt><dd id="statFavorites">—</dd></div>
+      </dl>
+    </section>
+
+    <section class="toolbar" id="toolbar" aria-label="筛选与排序">
+      <div class="toolbar-top">
+        <div class="collection-title">
+          <h2 id="collectionTitle">全部作品</h2>
+          <span class="count" id="collectionCount">—</span>
+        </div>
+        <div class="toolbar-actions">
+          <button class="fav-filter" id="favoriteFilter" type="button" aria-pressed="false" aria-label="只看收藏">
+            <svg class="icon heart-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.2 4.6 13a4.8 4.8 0 0 1 6.8-6.8L12 6.8l.6-.6A4.8 4.8 0 0 1 19.4 13Z"></path></svg>
+            <span>只看收藏</span>
+          </button>
+          <label class="sort">
+            <span class="sr-only">排序方式</span>
+            <select id="sortSelect">
+              <option value="newest">最新上传</option>
+              <option value="oldest">最早上传</option>
+              <option value="title">标题排序</option>
+            </select>
+            <svg class="icon chevron" viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </label>
+        </div>
+      </div>
+      <div class="chips" id="tagChips" aria-label="按标签筛选"></div>
+    </section>
+
+    <div class="loader" id="initialLoader">
+      <svg class="aperture spin" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="14.31" y1="8" x2="20.05" y2="17.94"></line>
+        <line x1="9.69" y1="8" x2="21.17" y2="8"></line>
+        <line x1="7.38" y1="12" x2="13.12" y2="2.06"></line>
+        <line x1="9.69" y1="16" x2="3.95" y2="6.06"></line>
+        <line x1="14.31" y1="16" x2="2.83" y2="16"></line>
+        <line x1="16.62" y1="12" x2="10.88" y2="21.94"></line>
+      </svg>
+      <p>正在布置画廊</p>
+    </div>
+
+    <section id="gallery" class="gallery" aria-live="polite"></section>
+
+    <div class="empty" id="emptyState" hidden>
+      <svg class="aperture" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="14.31" y1="8" x2="20.05" y2="17.94"></line>
+        <line x1="9.69" y1="8" x2="21.17" y2="8"></line>
+        <line x1="7.38" y1="12" x2="13.12" y2="2.06"></line>
+        <line x1="9.69" y1="16" x2="3.95" y2="6.06"></line>
+        <line x1="14.31" y1="16" x2="2.83" y2="16"></line>
+        <line x1="16.62" y1="12" x2="10.88" y2="21.94"></line>
+      </svg>
+      <h2 id="emptyTitle">画廊还是空的</h2>
+      <p id="emptyCopy">登录后上传第一张照片，让光留在这里。</p>
+      <button class="btn btn-primary" type="button" id="emptyAction">登录 / 注册</button>
+    </div>
+
+    <div class="empty" id="noResults" hidden>
+      <svg class="aperture" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="14.31" y1="8" x2="20.05" y2="17.94"></line>
+        <line x1="9.69" y1="8" x2="21.17" y2="8"></line>
+        <line x1="7.38" y1="12" x2="13.12" y2="2.06"></line>
+        <line x1="9.69" y1="16" x2="3.95" y2="6.06"></line>
+        <line x1="14.31" y1="16" x2="2.83" y2="16"></line>
+        <line x1="16.62" y1="12" x2="10.88" y2="21.94"></line>
+      </svg>
+      <h2>没有找到作品</h2>
+      <p>换一个关键词，或者清除筛选条件。</p>
+      <button class="btn btn-ghost" type="button" id="clearFilters">清除筛选</button>
+    </div>
+
+    <div class="page-fill" aria-hidden="true"></div>
+
+    <footer class="site-footer">
+      <p class="footer-brand">光影集 <span>·</span> LUMIÈRE</p>
+      <p>访客可浏览；注册后可上传，只有作者本人和管理员可以删除作品。</p>
+    </footer>
+  </main>
+
+  <div class="drag-overlay" id="dragOverlay" hidden aria-hidden="true">
+    <div class="drag-card">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4"></path><polyline points="7 9 12 4 17 9"></polyline><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"></path></svg>
+      <p>松开鼠标，上传照片</p>
+      <span>JPG · PNG · WebP</span>
+    </div>
+  </div>
+
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="作品详情" hidden>
+    <div class="lb-backdrop" data-lb-close></div>
+    <div class="lb-stage">
+      <div class="lb-topbar">
+        <span class="lb-counter" id="lbCounter">— / —</span>
+        <button class="lb-close" id="lbClose" type="button" aria-label="关闭">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg>
+        </button>
+      </div>
+      <button class="lb-arrow prev" id="lbPrev" type="button" aria-label="上一张">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 5 8 12 15 19"></polyline></svg>
+      </button>
+      <div class="lb-image-wrap" id="lbImageWrap">
+        <div class="lb-spinner" id="lbSpinner" hidden></div>
+        <img id="lbImage" alt="">
+      </div>
+      <button class="lb-arrow next" id="lbNext" type="button" aria-label="下一张">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><polyline points="9 5 16 12 9 19"></polyline></svg>
+      </button>
+    </div>
+
+    <aside class="lb-panel" id="lbPanel">
+      <div class="lb-panel-head">
+        <span class="lb-badge" id="lbFilmBadge" hidden></span>
+        <span class="save-state" id="saveState" aria-live="polite"></span>
+      </div>
+
+      <p class="lb-owner" id="lbOwner"></p>
+
+      <input class="lb-title" id="editTitle" maxlength="80" placeholder="未命名作品" aria-label="作品标题">
+      <textarea class="lb-caption" id="editCaption" rows="2" maxlength="800" placeholder="写点什么，关于这张照片…" aria-label="作品描述"></textarea>
+
+      <div class="lb-fields">
+        <label class="field">
+          <span>胶片 / 器材</span>
+          <input id="editFilm" maxlength="60" placeholder="例如 Kodak Portra 400">
+        </label>
+        <label class="field">
+          <span>地点</span>
+          <input id="editLocation" maxlength="60" placeholder="例如 杭州 · 西湖">
+        </label>
+        <label class="field">
+          <span>标签</span>
+          <input id="editTags" maxlength="200" placeholder="用逗号分隔，如 雾, 湖">
+        </label>
+      </div>
+
+      <dl class="lb-exif" id="lbExif"></dl>
+      <p class="lb-date" id="lbDate"></p>
+
+      <div class="lb-actions">
+        <button class="lb-fav" id="lbFavorite" type="button" aria-pressed="false">
+          <svg class="icon heart-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.2 4.6 13a4.8 4.8 0 0 1 6.8-6.8L12 6.8l.6-.6A4.8 4.8 0 0 1 19.4 13Z"></path></svg>
+          <span>收藏</span>
+        </button>
+        <button class="text-btn" id="lbDownload" type="button">下载大图</button>
+        <button class="text-btn danger" id="lbDelete" type="button" hidden>删除</button>
+      </div>
+      <p class="lb-hint" id="lbHint">← → 切换 · Esc 关闭</p>
+    </aside>
+  </div>
+
+  <div class="modal" id="uploadModal" role="dialog" aria-modal="true" aria-labelledby="uploadTitle" hidden>
+    <div class="modal-backdrop" data-upload-close></div>
+    <div class="modal-card">
+      <header class="modal-head">
+        <div>
+          <p class="eyebrow">ADD NEW WORK</p>
+          <h2 id="uploadTitle">上传作品</h2>
+        </div>
+        <button class="modal-close" id="uploadClose" type="button" aria-label="关闭">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg>
+        </button>
+      </header>
+
+      <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="选择或拖入照片">
+        <svg class="drop-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+          <circle cx="8.5" cy="10" r="1.5"></circle>
+          <path d="m21 15-4.5-4.5L9 18"></path>
+        </svg>
+        <p>拖拽照片到这里</p>
+        <span>或点击选择文件 · 支持 JPG / PNG / WebP，可多选</span>
+      </div>
+
+      <ul class="upload-queue" id="uploadQueue"></ul>
+
+      <div class="upload-footer">
+        <div class="progress" id="progressWrap" hidden><span id="progressBar"></span></div>
+        <p class="upload-note" id="uploadNote">照片会压缩后上传，拍摄信息（EXIF）会一并保留。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="authModal" role="dialog" aria-modal="true" aria-labelledby="authTitle" hidden>
+    <div class="modal-backdrop" data-auth-close></div>
+    <div class="modal-card auth-card">
+      <header class="modal-head">
+        <div>
+          <p class="eyebrow">MEMBER ACCESS</p>
+          <h2 id="authTitle">登录</h2>
+        </div>
+        <button class="modal-close" id="authClose" type="button" aria-label="关闭">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg>
+        </button>
+      </header>
+
+      <div class="auth-tabs" role="tablist" aria-label="登录或注册">
+        <button class="auth-tab is-active" type="button" data-mode="login" role="tab" aria-selected="true">登录</button>
+        <button class="auth-tab" type="button" data-mode="register" role="tab" aria-selected="false">注册</button>
+      </div>
+
+      <form class="auth-form" id="authForm">
+        <label class="auth-field" id="nameField" hidden>
+          <span>昵称</span>
+          <input id="authName" maxlength="40" autocomplete="nickname" placeholder="显示在作品旁边的名字">
+        </label>
+        <label class="auth-field">
+          <span>邮箱</span>
+          <input id="authEmail" type="email" required autocomplete="email" placeholder="you@example.com">
+        </label>
+        <label class="auth-field">
+          <span>密码</span>
+          <input id="authPassword" type="password" required minlength="6" autocomplete="current-password" placeholder="至少 6 位">
+        </label>
+        <p class="auth-error" id="authError" hidden></p>
+        <button class="btn btn-primary auth-submit" id="authSubmit" type="submit">登录</button>
+      </form>
+
+      <p class="auth-note" id="authNote">还没有账号？点上面的「注册」。</p>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden>
+    <span id="toastText"></span>
+    <button type="button" id="toastAction" hidden></button>
+  </div>
+
+  <div class="boot-error" id="bootError" hidden>
+    <h2>画廊没有正常加载</h2>
+    <p>请刷新页面，或检查当前网络是否可以访问 Supabase。</p>
+    <p class="boot-error-detail">如果问题持续，请确认 config.js 中的 Supabase URL 和 publishable key 是否正确。</p>
+  </div>
+
+  <noscript>
+    <div class="boot-error">
+      <h2>需要启用 JavaScript</h2>
+      <p>光影集依赖 JavaScript 运行，请在浏览器设置里启用后再打开这个页面。</p>
+    </div>
+  </noscript>
+
+  <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp,image/avif,.jpg,.jpeg,.png,.webp,.avif" multiple hidden>
+
+  <script src="config.js"></script>
+  <script src="assets/vendor/supabase.js"></script>
+  <script type="module" src="assets/js/app.js"></script>
+  <script>
+    (function () {
+      setTimeout(function () {
+        if (!window.__GYJ_READY__) {
+          var el = document.getElementById('bootError');
+          if (el) el.hidden = false;
+        }
+      }, 8000);
+    })();
+  </script>
+</body>
+</html>
